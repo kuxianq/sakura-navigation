@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { json, requireDb, sha256Hex, type Env } from '../_types'
 
-const STATE_KEY = 'main'
+const STATE_KEY = 'app'
 const MAX_AUDIT_LOGS = 80
 
 const aiScopes = ['content:read', 'content:write', 'appearance:read', 'appearance:write', 'ops:read', 'audit:read'] as const

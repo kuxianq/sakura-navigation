@@ -6,8 +6,7 @@ pages_build_output_dir = "dist"
 APP_NAME = "Sakura Navigation"
 PUBLIC_BG_API = "https://www.loliapi.com/acg/?type=json"
 
-# Bind this in Cloudflare Pages production/preview after creating D1.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "sakura-navigation"
-# database_id = "replace-after-d1-created"
+[[d1_databases]]
+binding = "DB"
+database_name = "sakura-navigation"
+database_id = "0004fea4-fcc3-4016-834d-daaad10726e3"

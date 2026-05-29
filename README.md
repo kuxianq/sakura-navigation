@@ -35,7 +35,7 @@ npm run lint
 Framework preset: Vite
 Build command: npm ci && npm run build
 Build output directory: dist
-Node version: 22
+Node version: 20
 ```
 
 必需绑定和变量：

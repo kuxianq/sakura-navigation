@@ -1,0 +1,36 @@
+.form-grid { display: grid; gap: 14px; }
+.form-grid.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-grid.two-col .span-2 { grid-column: span 2; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+.field-label em { color: #fca5a5; font-style: normal; }
+.field-input { width: 100%; padding: 11px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--theme-accent) 24%, transparent); background: rgba(35, 13, 39, .54); color: var(--theme-text); outline: none; font-size: 14px; }
+.field-input:focus { border-color: var(--theme-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 18%, transparent); }
+.field-input.compact { padding: 9px 12px; font-size: 13px; }
+.field-textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+.field-select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 32px; }
+.field-hint { font-size: 12px; color: var(--muted); }
+.field-error { font-size: 12px; color: #fca5a5; }
+
+.toggle { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.toggle-track { position: relative; width: 40px; height: 22px; border-radius: 999px; background: rgba(148,163,184,.4); transition: background .2s ease; }
+.toggle-thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform .2s ease; }
+.toggle input:checked ~ .toggle-track { background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent)); }
+.toggle input:checked ~ .toggle-track .toggle-thumb { transform: translateX(18px); }
+.toggle input:focus-visible ~ .toggle-track { box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 32%, transparent); }
+.toggle-text { display: flex; flex-direction: column; gap: 2px; }
+.toggle-text strong { font-size: 14px; }
+.toggle-text small { color: var(--muted); font-size: 12px; }
+
+.tag-input { display: flex; flex-direction: column; gap: 8px; }
+.tag-input-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; }
+.tag-input-list li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); font-size: 12px; }
+.tag-input-list button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 4px; }
+.tag-input-list button:hover { color: var(--theme-text); }
+.settings-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.settings-action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.range-field { display: grid; gap: 9px; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--theme-accent) 18%, transparent); background: rgba(255,255,255,.04); }
+.range-label { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.range-label strong { color: var(--theme-text); font-weight: 800; letter-spacing: 0; }
+.range-input { width: 100%; accent-color: var(--theme-primary); cursor: pointer; }

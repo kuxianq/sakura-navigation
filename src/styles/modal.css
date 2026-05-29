@@ -1,0 +1,11 @@
+.modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,.7); backdrop-filter: blur(8px); display: grid; place-items: center; padding: 20px; z-index: 50; animation: fadeIn .12s ease; }
+.modal { width: min(560px, 100%); max-height: calc(100vh - 40px); display: flex; flex-direction: column; border-radius: 24px; border: 1px solid rgba(255, 214, 231, .28); background: linear-gradient(145deg, rgba(76,38,82,.94), rgba(45,30,70,.9)); box-shadow: 0 24px 80px rgba(70, 22, 74, .32); overflow: hidden; }
+.modal-sm { width: min(420px, 100%); }
+.modal-lg { width: min(720px, 100%); }
+.modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.modal-header h3 { margin: 0 0 4px; font-size: 18px; }
+.modal-header p { margin: 0; color: var(--muted); font-size: 13px; }
+.modal-body { padding: 22px; overflow-y: auto; }
+.modal-message { margin: 0; color: var(--muted); line-height: 1.55; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px; border-top: 1px solid rgba(255,255,255,.08); background: rgba(255, 247, 251, .06); }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

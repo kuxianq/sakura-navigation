@@ -1,0 +1,115 @@
+:root {
+  color: #eef2ff;
+  background: #0f172a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --theme-primary: #ff8fbd;
+  --theme-accent: #ffe3f0;
+  --theme-text: #fff7fb;
+  --theme-panel: rgba(54, 24, 55, 0.46);
+  --theme-border: rgba(255, 214, 231, 0.28);
+  --theme-shadow: rgba(40, 9, 37, 0.42);
+
+  --line: var(--theme-border);
+  --muted: color-mix(in srgb, var(--theme-text) 76%, transparent);
+  --accent: var(--theme-primary);
+  --cyan: var(--theme-accent);
+
+  --bg-opacity: .42;
+  --bg-blur: 0px;
+  --bg-brightness: .95;
+  --bg-saturation: 1.1;
+  --card-radius: 22px;
+  --card-opacity: .115;
+  --card-blur: 13px;
+  --card-border-opacity: .24;
+  --card-shadow: .18;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+
+.app-shell {
+  min-height: 100vh;
+  padding: 28px;
+  color: var(--theme-text);
+  background:
+    linear-gradient(120deg, rgba(41, 10, 36, .36), rgba(10, 17, 42, .64)),
+    radial-gradient(circle at 78% 18%, rgba(255, 229, 238, .42), transparent 20%),
+    var(--bg-image) center/cover,
+    linear-gradient(135deg, #2a102b, #102240);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255, 215, 231, .50) 0 1.8px, transparent 2.4px),
+    radial-gradient(circle at 72% 16%, rgba(255, 247, 251, .34) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 38% 78%, rgba(255, 143, 189, .30) 0 1.6px, transparent 2.3px),
+    radial-gradient(circle at 84% 66%, rgba(255, 227, 240, .28) 0 1px, transparent 1.8px);
+  background-size: 163px 211px, 241px 173px, 197px 263px, 307px 229px;
+  background-position: 0 0, 43px 71px, 97px 29px, 151px 113px;
+  animation: sakuraDrift 38s linear infinite;
+}
+
+.app-shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(var(--bg-blur)) brightness(var(--bg-brightness)) saturate(var(--bg-saturation));
+  background:
+    radial-gradient(ellipse at center, transparent 35%, rgba(20, 6, 26, .34) 100%),
+    rgba(20, 6, 26, var(--bg-opacity));
+}
+
+@keyframes sakuraDrift {
+  from { background-position: 0 0, 43px 71px, 97px 29px, 151px 113px; }
+  to { background-position: 163px 211px, -198px 244px, 294px -234px, -156px 342px; }
+}
+
+.ambient {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(36px);
+  opacity: .42;
+  pointer-events: none;
+  z-index: 0;
+  animation: float 12s ease-in-out infinite;
+}
+.ambient-one { width: 240px; height: 240px; background: var(--theme-primary); left: 5%; top: 12%; }
+.ambient-two { width: 280px; height: 280px; background: var(--theme-accent); right: 9%; bottom: 10%; animation-delay: -4s; }
+@keyframes float { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(18px,-22px,0) scale(1.05); } }
+@media (max-width: 760px), (pointer: coarse) {
+  .app-shell {
+    background-attachment: scroll;
+  }
+  .app-shell::before,
+  .ambient {
+    animation: none;
+  }
+  .app-shell::before {
+    opacity: .55;
+    background-size: 210px 260px, 280px 220px, 260px 320px, 360px 280px;
+  }
+  .app-shell::after {
+    backdrop-filter: none;
+  }
+  .ambient {
+    filter: blur(24px);
+    opacity: .26;
+  }
+}

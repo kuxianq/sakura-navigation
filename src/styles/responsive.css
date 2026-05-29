@@ -1,0 +1,32 @@
+@media (max-width: 980px) {
+  .app-shell { padding: 14px; }
+  .page-glass { min-height: calc(100vh - 28px); border-radius: 24px; padding: 14px; }
+  .smart-console { grid-template-columns: 1fr; align-items: stretch; }
+  .console-sidebar { align-self: stretch; }
+  .console-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .console-metrics,
+  .control-board { grid-template-columns: 1fr; }
+  .compact-board,
+  .slider-grid,
+  .form-grid.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid.two-col .span-2 { grid-column: auto; }
+}
+
+@media (max-width: 640px) {
+  .topbar { align-items: flex-start; flex-direction: column; border-radius: 24px; }
+  .top-actions { width: 100%; }
+  .top-actions button { flex: 1; justify-content: center; }
+  .hero-copy h1 { font-size: 52px; }
+  .site-grid,
+  .console-nav,
+  .console-metrics,
+  .theme-preset-grid,
+  .control-board,
+  .slider-grid,
+  .compact-board { grid-template-columns: 1fr; }
+  .console-topbar,
+  .console-module-head,
+  .overview-hero { flex-direction: column; align-items: flex-start; }
+  .admin-section-head { flex-direction: column; align-items: flex-start; }
+  .admin-section-tools { width: 100%; }
+}

@@ -124,6 +124,8 @@ export function SettingsTab({ panel = 'basic' }: SettingsTabProps) {
               <Field label="页脚图标"><TextInput value={draft.footerIcon} onChange={(value) => patch('footerIcon', value)} placeholder="🌸" /></Field>
               <Field label="页脚品牌"><TextInput value={draft.footerBrand} onChange={(value) => patch('footerBrand', value)} placeholder="Sakura Navigation" /></Field>
               <Field label="页脚文字" hint="显示在首页底部，用于一句话签名。"><TextInput value={draft.footerText} onChange={(value) => patch('footerText', value)} placeholder="轻盈地收藏常用入口" /></Field>
+              <Field label="网站 SVG 图标" hint="用于浏览器标签页和保存到桌面时的图标。支持 /assets/*.svg 或完整 URL。"><TextInput value={draft.siteIconSvg} onChange={(value) => patch('siteIconSvg', value)} placeholder="/assets/sakura-icon.svg" /></Field>
+              <Field label="备用图标 URL" hint="可选；如果想用外部图标，可填完整 URL。"><TextInput value={draft.siteIconUrl ?? ''} onChange={(value) => patch('siteIconUrl', value)} placeholder="https://.../icon.svg" /></Field>
             </div>
             <Field
               label="动画效果"

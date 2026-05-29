@@ -8,10 +8,11 @@ export interface AiKeyRecord {
   id: string
   name: string
   prefix: string
-  secret: string
+  secret?: string
   scopes: AiScope[]
   isActive: boolean
   createdAt: string
+  updatedAt?: string
   lastUsedAt?: string
 }
 
@@ -61,6 +62,8 @@ export interface ThemeSettings {
   footerIcon: string
   footerBrand: string
   footerText: string
+  siteIconSvg: string
+  siteIconUrl?: string
   backgroundMode: BackgroundMode
   backgroundApi: string
   backgroundUrl?: string

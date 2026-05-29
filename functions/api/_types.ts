@@ -2,7 +2,6 @@ export interface Env {
   DB?: D1Database
   ADMIN_PASSWORD?: string
   ADMIN_SESSION_SECRET?: string
-  AI_ADMIN_TOKEN?: string
   APP_NAME?: string
   PUBLIC_BG_API?: string
 }
@@ -30,6 +29,11 @@ function parseCookies(header: string | null): Record<string, string> {
     cookies[rawKey] = decodeURIComponent(rawValue.join('='))
   }
   return cookies
+}
+
+export async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 async function hmac(secret: string, value: string): Promise<string> {

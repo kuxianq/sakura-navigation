@@ -66,6 +66,19 @@ function AppShell() {
   }, [])
 
   useEffect(() => {
+    document.title = settings.siteTitle || 'Sakura'
+    const iconHref = settings.siteIconUrl?.trim() || settings.siteIconSvg?.trim() || '/assets/sakura-icon.svg'
+    let icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+    if (!icon) {
+      icon = document.createElement('link')
+      icon.rel = 'icon'
+      document.head.appendChild(icon)
+    }
+    icon.type = iconHref.endsWith('.svg') ? 'image/svg+xml' : 'image/png'
+    icon.href = iconHref
+  }, [settings.siteIconSvg, settings.siteIconUrl, settings.siteTitle])
+
+  useEffect(() => {
     if (settings.backgroundMode !== 'api') {
       // Non-api modes are derived synchronously below; clear any cached API background.
       return

@@ -1,11 +1,12 @@
 import type { NavCategory, NavSite, ThemeSettings } from '../types/navigation'
 
 export const starterTheme: ThemeSettings = {
-  siteTitle: 'Sakura Navigation',
-  siteSubtitle: 'A clean and gentle personal navigation page.',
+  siteTitle: '樱花导航',
+  siteSubtitle: '安静收藏常用入口，让每一次打开都轻盈一点。',
   footerIcon: '🌸',
   footerBrand: 'Sakura Navigation',
-  footerText: 'Collect useful links in one quiet place',
+  footerText: '轻盈地收藏常用入口',
+  siteIconSvg: '/assets/sakura-icon.svg',
   backgroundMode: 'api',
   backgroundApi: 'https://www.loliapi.com/acg/?type=json',
   fallbackBackground: '/assets/fallback-bg.svg',
@@ -42,13 +43,13 @@ export const starterTheme: ThemeSettings = {
 }
 
 export const starterCategories: NavCategory[] = [
-  { id: 'common', name: 'Common Links', icon: 'Compass', description: 'Frequently used entries.', sortOrder: 1, isVisible: true },
-  { id: 'resources', name: 'Resources', icon: 'BookOpen', description: 'Documents, references, and saved materials.', sortOrder: 2, isVisible: true },
-  { id: 'tools', name: 'Tools', icon: 'Wrench', description: 'Utilities and workbench links.', sortOrder: 3, isVisible: true },
+  { id: 'common', name: '常用入口', icon: 'Compass', description: '常用访问入口。', sortOrder: 1, isVisible: true },
+  { id: 'resources', name: '资料收藏', icon: 'BookOpen', description: '文档、教程和参考资料。', sortOrder: 2, isVisible: true },
+  { id: 'tools', name: '实用工具', icon: 'Wrench', description: '常用工具和工作入口。', sortOrder: 3, isVisible: true },
 ]
 
 export const starterSites: NavSite[] = [
-  { id: 'home-entry', categoryId: 'common', name: 'Home Entry', url: 'https://example.com', description: 'A placeholder entry for the navigation homepage.', icon: 'Sparkles', tags: ['Home'], sortOrder: 1, isVisible: true },
-  { id: 'reference-entry', categoryId: 'resources', name: 'Reference Entry', url: 'https://example.com/reference', description: 'A placeholder entry for documents or references.', icon: 'BookOpen', tags: ['Docs'], sortOrder: 1, isVisible: true },
-  { id: 'tool-entry', categoryId: 'tools', name: 'Tool Entry', url: 'https://example.com/tool', description: 'A placeholder entry for a useful tool.', icon: 'Wrench', tags: ['Tool'], sortOrder: 1, isVisible: true },
+  { id: 'home-entry', categoryId: 'common', name: '首页入口', url: 'https://example.com', description: '常用访问入口，后续可在后台替换为真实站点。', icon: 'Sparkles', tags: ['首页'], sortOrder: 1, isVisible: true },
+  { id: 'reference-entry', categoryId: 'resources', name: '资料便签', url: 'https://example.com/reference', description: '收藏文档、教程和参考资料的位置。', icon: 'BookOpen', tags: ['资料'], sortOrder: 1, isVisible: true },
+  { id: 'tool-entry', categoryId: 'tools', name: '工具箱', url: 'https://example.com/tool', description: '放置常用工具和临时工作入口。', icon: 'Wrench', tags: ['工具'], sortOrder: 1, isVisible: true },
 ]

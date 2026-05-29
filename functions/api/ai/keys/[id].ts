@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { json, requireAdmin, requireDb, type Env } from '../_types'
+import { json, requireAdmin, requireDb, type Env } from '../../_types'
 
 const patchSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),

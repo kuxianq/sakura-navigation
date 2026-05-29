@@ -105,8 +105,24 @@ function AppShell() {
     setAccessError('访问密码不正确。')
   }
 
-  function unlockAdmin(event: FormEvent<HTMLFormElement>) {
+  async function unlockAdmin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: adminInput }),
+      })
+      if (response.ok) {
+        sessionStorage.setItem('nav_admin_unlocked', adminInput)
+        setAdminUnlockToken(adminInput)
+        setAdminError(null)
+        return
+      }
+    } catch {
+      // Fall back to local preview password below when Pages Functions are unavailable.
+    }
+
     if (adminInput === settings.adminPassword && settings.adminPassword.trim()) {
       sessionStorage.setItem('nav_admin_unlocked', settings.adminPassword)
       setAdminUnlockToken(settings.adminPassword)
@@ -123,15 +139,16 @@ function AppShell() {
   }
 
   function logoutAdmin() {
+    void fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined)
     sessionStorage.removeItem('nav_admin_unlocked')
     setAdminUnlockToken('')
     setAdminInput('')
   }
 
   const frontendUnlocked = settings.frontendPasswordEnabled && Boolean(settings.frontendPassword.trim()) && frontendUnlockToken === settings.frontendPassword
-  const adminUnlocked = settings.adminPasswordEnabled && Boolean(settings.adminPassword.trim()) && adminUnlockToken === settings.adminPassword
+  const adminUnlocked = Boolean(adminUnlockToken)
   const needsFrontendPassword = route === 'home' && settings.frontendPasswordEnabled && Boolean(settings.frontendPassword.trim()) && !frontendUnlocked
-  const needsAdminPassword = route === 'admin' && settings.adminPasswordEnabled && Boolean(settings.adminPassword.trim()) && !adminUnlocked
+  const needsAdminPassword = route === 'admin' && !adminUnlocked
 
   const shellStyle = {
     '--bg-image': `url(${background})`,

@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { AiAuditLog, AiCommandResult, AiKeyRecord, NavCategory, NavSite, ThemeSettings } from '../types/navigation'
 import { starterCategories, starterSites, starterTheme } from '../data/starter'
 import { ensureUniqueId, shortId, slugify } from '../lib/ids'
 import { NavStoreContext, type AiKeyDraft, type NavStore } from './navStoreContext'
 
 const STORAGE_KEY = 'sakura-navigation:v1'
+const API_STATE_ENDPOINT = '/api/state'
 const MAX_AUDIT_LOGS = 80
 
 const appearanceSettingKeys = new Set<keyof ThemeSettings>([
@@ -92,6 +93,30 @@ function persistState(state: PersistedState) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
 
+async function persistRemoteState(state: PersistedState) {
+  if (typeof window === 'undefined') return
+  try {
+    await fetch(API_STATE_ENDPOINT, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(state),
+    })
+  } catch {
+    // Remote sync is best-effort. localStorage remains the preview/offline fallback.
+  }
+}
+
+function normalizePersistedState(value: Partial<PersistedState> | null | undefined): PersistedState {
+  return {
+    version: 1,
+    categories: Array.isArray(value?.categories) ? value.categories : clone(starterCategories),
+    sites: Array.isArray(value?.sites) ? value.sites : clone(starterSites),
+    settings: mergeSettings(value?.settings),
+    aiKeys: Array.isArray(value?.aiKeys) ? value.aiKeys : [],
+    aiAuditLogs: Array.isArray(value?.aiAuditLogs) ? value.aiAuditLogs : [],
+  }
+}
+
 function clearPersistedState() {
   if (typeof window === 'undefined') return
   window.localStorage.removeItem(STORAGE_KEY)
@@ -164,14 +189,41 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
     nextAiKeys: AiKeyRecord[],
     nextAiAuditLogs: AiAuditLog[],
   ) => {
-    persistState({
+    const snapshot = {
       version: 1,
       categories: nextCategories,
       sites: nextSites,
       settings: nextSettings,
       aiKeys: nextAiKeys,
       aiAuditLogs: nextAiAuditLogs,
-    })
+    } satisfies PersistedState
+    persistState(snapshot)
+    void persistRemoteState(snapshot)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadRemoteState() {
+      try {
+        const response = await fetch(API_STATE_ENDPOINT)
+        if (!response.ok) return
+        const data = await response.json() as { state?: Partial<PersistedState> | null }
+        if (cancelled || !data.state) return
+        const next = normalizePersistedState(data.state)
+        setCategoriesState(next.categories)
+        setSitesState(next.sites)
+        setSettingsState(next.settings)
+        setAiKeysState(next.aiKeys)
+        setAiAuditLogsState(next.aiAuditLogs)
+        persistState(next)
+      } catch {
+        // D1 may be absent during local preview; keep using local fallback state.
+      }
+    }
+    void loadRemoteState()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const commitCategories = useCallback((updater: (prev: NavCategory[]) => NavCategory[]) => {

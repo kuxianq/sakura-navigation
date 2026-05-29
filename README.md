@@ -2,7 +2,7 @@
 
 A lightweight personal navigation/start page for Cloudflare Pages.
 
-It includes a public homepage and an admin console for managing site entries, categories, appearance settings, access-password preview settings, and local AI key command simulation.
+It includes a public homepage and an admin console for managing site entries, categories, appearance settings, access protection, and AI key command simulation.
 
 ## Stack
 
@@ -11,6 +11,7 @@ It includes a public homepage and an admin console for managing site entries, ca
 - TypeScript
 - Tailwind CSS
 - Cloudflare Pages
+- Cloudflare D1
 
 ## Local development
 
@@ -37,6 +38,13 @@ Build output directory: dist
 Node version: 22
 ```
 
-Environment variables can be configured from `.env.example` when needed.
+Required bindings and variables:
 
-D1 is not required for the current static/local-storage version. Bind D1 only when enabling the production database/API flow.
+```text
+D1 binding: DB
+ADMIN_PASSWORD: initial admin password
+ADMIN_SESSION_SECRET: random session secret
+PUBLIC_BG_API: optional random background API
+```
+
+Run `migrations/0001_initial.sql` on the D1 database before using the admin console.

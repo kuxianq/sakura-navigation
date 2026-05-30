@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import type { AiAuditLog, AiCommandResult, AiKeyRecord, NavCategory, NavSite, ThemeSettings } from '../types/navigation'
 import { starterCategories, starterSites, starterTheme } from '../data/starter'
 import { ensureUniqueId, shortId, slugify } from '../lib/ids'
+import { normalizeCategoryIds, removeCategoryFromSite } from '../lib/site-categories'
 import { NavStoreContext, type AiKeyDraft, type NavStore } from './navStoreContext'
 
 const STORAGE_KEY = 'sakura-navigation:v1'
@@ -274,7 +275,10 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
 
   const deleteCategory = useCallback<NavStore['deleteCategory']>((id) => {
     const nextCategories = categories.filter((category) => category.id !== id)
-    const nextSites = sites.filter((site) => site.categoryId !== id)
+    const nextSites = sites.flatMap((site) => {
+      const next = removeCategoryFromSite(site, id)
+      return next ? [next] : []
+    })
     setCategoriesState(nextCategories)
     setSitesState(nextSites)
     saveSnapshot(nextCategories, nextSites, settings, aiKeys, aiAuditLogs)
@@ -292,10 +296,12 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
     const item: NavSite = {
       id,
       categoryId: draft.categoryId,
+      categoryIds: normalizeCategoryIds(draft.categoryId, draft.categoryIds),
       name: draft.name.trim(),
       url: draft.url.trim(),
       description: draft.description?.trim() || '',
       icon: draft.icon?.trim() || 'Sparkles',
+      iconUrl: draft.iconUrl?.trim() || undefined,
       tags: draft.tags ?? [],
       sortOrder: nextOrder,
       isVisible: draft.isVisible ?? true,
@@ -308,7 +314,11 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
 
   const updateSite = useCallback<NavStore['updateSite']>((id, patch) => {
     commitSites((prev) =>
-      prev.map((site) => (site.id === id ? { ...site, ...patch, id: site.id } : site)),
+      prev.map((site) => {
+        if (site.id !== id) return site
+        const next = { ...site, ...patch, id: site.id }
+        return { ...next, categoryIds: normalizeCategoryIds(next.categoryId, next.categoryIds) }
+      }),
     )
   }, [commitSites])
 
@@ -485,10 +495,12 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
       const item: NavSite = {
         id: ensureUniqueId(slugify(name) || shortId('site'), sites.map((site) => site.id), 'site'),
         categoryId,
+        categoryIds: normalizeCategoryIds(categoryId, payload.categoryIds),
         name,
         url,
         description: typeof payload.description === 'string' ? payload.description : '',
         icon: typeof payload.icon === 'string' ? payload.icon : 'Sparkles',
+        iconUrl: typeof payload.iconUrl === 'string' ? payload.iconUrl : undefined,
         tags: Array.isArray(payload.tags) ? payload.tags.filter((tag): tag is string => typeof tag === 'string') : [],
         sortOrder: Math.max(0, ...sites.filter((site) => site.categoryId === categoryId).map((site) => site.sortOrder)) + 1,
         isVisible: typeof payload.isVisible === 'boolean' ? payload.isVisible : true,
@@ -505,15 +517,21 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
       if (!target) return finish({ ok: false, result: 'blocked', message: `站点不存在：${id}` })
       const patch: Partial<NavSite> = {}
       if (typeof payload.categoryId === 'string') patch.categoryId = payload.categoryId
+      if (Array.isArray(payload.categoryIds)) patch.categoryIds = normalizeCategoryIds(patch.categoryId ?? target.categoryId, payload.categoryIds)
       if (typeof payload.name === 'string') patch.name = payload.name.trim()
       if (typeof payload.url === 'string') patch.url = payload.url.trim()
       if (typeof payload.description === 'string') patch.description = payload.description
       if (typeof payload.icon === 'string') patch.icon = payload.icon
+      if (typeof payload.iconUrl === 'string') patch.iconUrl = payload.iconUrl
       if (Array.isArray(payload.tags)) patch.tags = payload.tags.filter((tag): tag is string => typeof tag === 'string')
       if (typeof payload.isVisible === 'boolean') patch.isVisible = payload.isVisible
       if (typeof payload.isPrivate === 'boolean') patch.isPrivate = payload.isPrivate
       if (typeof payload.cardVariant === 'string') patch.cardVariant = payload.cardVariant as NavSite['cardVariant']
-      const nextSites = sites.map((site) => (site.id === id ? { ...site, ...patch, id } : site))
+      const nextSites = sites.map((site) => {
+        if (site.id !== id) return site
+        const next = { ...site, ...patch, id }
+        return { ...next, categoryIds: normalizeCategoryIds(next.categoryId, next.categoryIds) }
+      })
       return commitSuccess({ ok: true, result: 'success', message: `已更新站点：${target.name}`, changed: Object.keys(patch) }, categories, nextSites)
     }
 
@@ -576,9 +594,12 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
       const target = categories.find((category) => category.id === id)
       if (!target) return finish({ ok: false, result: 'blocked', message: `分类不存在：${id}` })
       return commitSuccess(
-        { ok: true, result: 'success', message: `已删除分类并移除所属站点：${target.name}`, changed: [id] },
+        { ok: true, result: 'success', message: `已删除分类并处理相关站点归属：${target.name}`, changed: [id] },
         categories.filter((category) => category.id !== id),
-        sites.filter((site) => site.categoryId !== id),
+        sites.flatMap((site) => {
+          const next = removeCategoryFromSite(site, id)
+          return next ? [next] : []
+        }),
       )
     }
 

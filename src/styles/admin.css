@@ -76,6 +76,11 @@ body:has(.smart-console) .page-glass {
 .admin-section-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .admin-empty { padding: 24px; border: 1px dashed var(--line); border-radius: 22px; background: rgba(2,6,23,.18); color: var(--muted); text-align: center; }
 .admin-table-wrap { border: 1px solid var(--line); border-radius: 18px; background: rgba(255,247,251,.055); overflow: auto; }
+.category-chip-list { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.category-chip-list strong,
+.category-chip-list span { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,247,251,.08); font-size: 12px; }
+.category-chip-list strong { color: var(--theme-accent); }
+.category-chip-list span { color: var(--muted); }
 .admin-table { width: 100%; border-collapse: collapse; min-width: 720px; }
 .admin-table th,
 .admin-table td { padding: 14px 16px; text-align: left; vertical-align: middle; border-bottom: 1px solid rgba(255,255,255,.06); }

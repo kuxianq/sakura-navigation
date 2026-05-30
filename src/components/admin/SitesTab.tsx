@@ -1,33 +1,22 @@
 import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, Eye, EyeOff, ExternalLink, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useNavStore } from '../../state/navStoreContext'
-import { ICON_OPTIONS } from '../../lib/icon-options'
+import { siteBelongsToCategory, getSiteCategoryIds } from '../../lib/site-categories'
 import { IconByName } from '../../lib/icons'
 import type { CardVariant, NavSite } from '../../types/navigation'
-import { Field, NumberInput, Select, TagInput, TextArea, TextInput, Toggle } from './forms'
 import { ConfirmDialog, Modal } from './Modal'
+import { SiteForm, type SiteDraftState } from './SiteForm'
 
-interface DraftState {
-  id: string
-  name: string
-  url: string
-  description: string
-  icon: string
-  categoryId: string
-  tags: string[]
-  sortOrder: number
-  isVisible: boolean
-  cardVariant: CardVariant | 'inherit'
-}
-
-function emptyDraft(categoryId: string): DraftState {
+function emptyDraft(categoryId: string): SiteDraftState {
   return {
     id: '',
     name: '',
     url: '',
     description: '',
     icon: 'Sparkles',
+    iconUrl: '',
     categoryId,
+    categoryIds: categoryId ? [categoryId] : [],
     tags: [],
     sortOrder: 0,
     isVisible: true,
@@ -35,14 +24,16 @@ function emptyDraft(categoryId: string): DraftState {
   }
 }
 
-function fromSite(site: NavSite): DraftState {
+function fromSite(site: NavSite): SiteDraftState {
   return {
     id: site.id,
     name: site.name,
     url: site.url,
     description: site.description,
     icon: site.icon,
+    iconUrl: site.iconUrl ?? '',
     categoryId: site.categoryId,
+    categoryIds: getSiteCategoryIds(site),
     tags: [...site.tags],
     sortOrder: site.sortOrder,
     isVisible: site.isVisible,
@@ -50,20 +41,12 @@ function fromSite(site: NavSite): DraftState {
   }
 }
 
-const cardVariantOptions: { value: DraftState['cardVariant']; label: string }[] = [
-  { value: 'inherit', label: '跟随全局设置' },
-  { value: 'glass', label: '玻璃悬浮' },
-  { value: 'float', label: '通透悬浮' },
-  { value: 'solid', label: '实体卡片' },
-  { value: 'minimal', label: '极简入口' },
-]
-
 export function SitesTab() {
   const { sites, categories, settings, createSite, updateSite, deleteSite, moveSite } = useNavStore()
 
   const [editing, setEditing] = useState<NavSite | null>(null)
   const [creating, setCreating] = useState(false)
-  const [draft, setDraft] = useState<DraftState>(() => emptyDraft(categories[0]?.id ?? ''))
+  const [draft, setDraft] = useState<SiteDraftState>(() => emptyDraft(categories[0]?.id ?? ''))
   const [errors, setErrors] = useState<{ name?: string; url?: string; category?: string }>({})
   const [pendingDelete, setPendingDelete] = useState<NavSite | null>(null)
   const [filterCategory, setFilterCategory] = useState<'all' | string>('all')
@@ -77,15 +60,10 @@ export function SitesTab() {
     [categories],
   )
 
-  const iconOptions = useMemo(
-    () => ICON_OPTIONS,
-    [],
-  )
-
   const filtered = useMemo(() => {
     const normalized = search.trim().toLowerCase()
     return [...sites]
-      .filter((site) => filterCategory === 'all' || site.categoryId === filterCategory)
+      .filter((site) => filterCategory === 'all' || siteBelongsToCategory(site, filterCategory))
       .filter((site) => {
         if (!normalized) return true
         return [site.name, site.description, site.url, ...site.tags]
@@ -161,7 +139,9 @@ export function SitesTab() {
         url: draft.url.trim(),
         description: draft.description.trim(),
         icon: draft.icon,
+        iconUrl: draft.iconUrl.trim() || undefined,
         categoryId: draft.categoryId,
+        categoryIds: [...draft.categoryIds],
         tags: [...draft.tags],
         sortOrder: draft.sortOrder,
         isVisible: draft.isVisible,
@@ -174,7 +154,9 @@ export function SitesTab() {
         url: draft.url.trim(),
         description: draft.description.trim(),
         icon: draft.icon,
+        iconUrl: draft.iconUrl.trim() || undefined,
         categoryId: draft.categoryId,
+        categoryIds: [...draft.categoryIds],
         tags: [...draft.tags],
         sortOrder: draft.sortOrder || undefined,
         isVisible: draft.isVisible,
@@ -194,7 +176,7 @@ export function SitesTab() {
       <header className="admin-section-head">
         <div>
           <h2>站点设置</h2>
-          <p>每个站点都属于一个分类，可在分类内调整排序、显示状态和卡片样式。</p>
+          <p>站点可以显示在多个分类中；排序仍按主分类处理，全部页只保留一张卡片。</p>
         </div>
         <div className="admin-section-tools">
           <input
@@ -243,6 +225,7 @@ export function SitesTab() {
               {filtered.map((site) => {
                 const peers = peerIndex.get(site.categoryId) ?? []
                 const idx = rowPosition(site)
+                const categoryNames = getSiteCategoryIds(site).map((id) => categories.find((c) => c.id === id)?.name ?? id)
                 const categoryName = categories.find((c) => c.id === site.categoryId)?.name ?? site.categoryId
                 return (
                   <tr key={site.id}>
@@ -284,7 +267,12 @@ export function SitesTab() {
                         </div>
                       </div>
                     </td>
-                    <td>{categoryName}</td>
+                    <td>
+                      <div className="category-chip-list">
+                        <strong>{categoryName}</strong>
+                        {categoryNames.filter((name) => name !== categoryName).map((name) => <span key={name}>{name}</span>)}
+                      </div>
+                    </td>
                     <td>
                       <div className="tag-row inline">
                         {site.tags.length === 0 ? <span className="muted">—</span> : site.tags.map((tag) => <em key={tag}>{tag}</em>)}
@@ -335,85 +323,13 @@ export function SitesTab() {
           </>
         }
       >
-        <div className="form-grid two-col">
-          <Field label="站点名称" required error={errors.name}>
-            <TextInput
-              value={draft.name}
-              onChange={(value) => setDraft((prev) => ({ ...prev, name: value }))}
-              placeholder="文档中心"
-              required
-            />
-          </Field>
-          <Field label="站点链接" required error={errors.url}>
-            <TextInput
-              value={draft.url}
-              onChange={(value) => setDraft((prev) => ({ ...prev, url: value }))}
-              placeholder="https://example.com/docs"
-              type="url"
-              required
-            />
-          </Field>
-          <Field label="所属分类" required error={errors.category}>
-            <Select
-              value={draft.categoryId}
-              onChange={(value) => setDraft((prev) => ({ ...prev, categoryId: value }))}
-              options={categoryOptions.length ? categoryOptions : [{ value: '', label: '暂无分类' }]}
-            />
-          </Field>
-          <Field label="图标">
-            <Select
-              value={draft.icon}
-              onChange={(value) => setDraft((prev) => ({ ...prev, icon: value }))}
-              options={iconOptions}
-            />
-          </Field>
-          {!editing ? (
-            <Field label="ID" hint="可留空，系统会根据名称自动生成。">
-              <TextInput
-                value={draft.id}
-                onChange={(value) => setDraft((prev) => ({ ...prev, id: value }))}
-                placeholder="docs-center"
-              />
-            </Field>
-          ) : null}
-          <Field label="排序" hint="在所属分类内排序，数字越小越靠前。">
-            <NumberInput
-              value={draft.sortOrder}
-              onChange={(value) => setDraft((prev) => ({ ...prev, sortOrder: value }))}
-            />
-          </Field>
-          <Field label="卡片样式" hint="可单独覆盖全局卡片样式。">
-            <Select
-              value={draft.cardVariant}
-              onChange={(value) => setDraft((prev) => ({ ...prev, cardVariant: value }))}
-              options={cardVariantOptions}
-            />
-          </Field>
-          <Field label="标签" hint="输入后按 Enter 或逗号添加。">
-            <TagInput
-              value={draft.tags}
-              onChange={(value) => setDraft((prev) => ({ ...prev, tags: value }))}
-            />
-          </Field>
-          <div className="span-2">
-            <Field label="简介">
-              <TextArea
-                value={draft.description}
-                onChange={(value) => setDraft((prev) => ({ ...prev, description: value }))}
-                placeholder="用一句话说明这个入口的用途。"
-                rows={3}
-              />
-            </Field>
-          </div>
-          <div className="span-2">
-            <Toggle
-              checked={draft.isVisible}
-              onChange={(value) => setDraft((prev) => ({ ...prev, isVisible: value }))}
-              label="在首页显示"
-              description="关闭后只在后台保留。"
-            />
-          </div>
-        </div>
+        <SiteForm
+          draft={draft}
+          categories={categories}
+          errors={errors}
+          isEditing={!!editing}
+          onChange={setDraft}
+        />
       </Modal>
 
       <ConfirmDialog

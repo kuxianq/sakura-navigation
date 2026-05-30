@@ -21,10 +21,12 @@ interface NavCategory {
 interface NavSite {
   id: string
   categoryId: string
+  categoryIds?: string[]
   name: string
   url: string
   description: string
   icon: string
+  iconUrl?: string
   tags: string[]
   sortOrder: number
   isVisible: boolean
@@ -98,6 +100,24 @@ const forbiddenSettingKeys = new Set([
   'aiOpsEnabled',
   'aiReadonly',
 ])
+
+function uniqueStrings(values: unknown[]): string[] {
+  return [...new Set(values.filter((value): value is string => typeof value === 'string' && value.trim().length > 0).map((value) => value.trim()))]
+}
+
+function normalizeCategoryIds(primaryCategoryId: string, categoryIds?: unknown): string[] {
+  const primary = primaryCategoryId.trim()
+  const extra = Array.isArray(categoryIds) ? uniqueStrings(categoryIds) : []
+  return uniqueStrings([primary, ...extra])
+}
+
+function removeCategoryFromSite(site: NavSite, categoryId: string): NavSite | null {
+  if (site.categoryId === categoryId) return null
+  return {
+    ...site,
+    categoryIds: normalizeCategoryIds(site.categoryId, site.categoryIds).filter((id) => id !== categoryId),
+  }
+}
 
 function makeId(prefix: string) {
   return `${prefix}_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`
@@ -222,10 +242,12 @@ function createSite(state: AppState, payload: Record<string, unknown>) {
   const item: NavSite = {
     id: ensureUniqueId(slugify(name), state.sites.map((site) => site.id), 'site'),
     categoryId,
+    categoryIds: normalizeCategoryIds(categoryId, payload.categoryIds),
     name,
     url,
     description: typeof payload.description === 'string' ? payload.description : '',
     icon: typeof payload.icon === 'string' ? payload.icon : 'Sparkles',
+    iconUrl: typeof payload.iconUrl === 'string' ? payload.iconUrl : undefined,
     tags: Array.isArray(payload.tags) ? payload.tags.filter((tag): tag is string => typeof tag === 'string') : [],
     sortOrder: Math.max(0, ...state.sites.filter((site) => site.categoryId === categoryId).map((site) => site.sortOrder)) + 1,
     isVisible: typeof payload.isVisible === 'boolean' ? payload.isVisible : true,
@@ -243,15 +265,21 @@ function updateSite(state: AppState, payload: Record<string, unknown>) {
   if (idx < 0) throw new Error(`站点不存在：${id}`)
   const patch: Partial<NavSite> = {}
   if (typeof payload.categoryId === 'string') patch.categoryId = payload.categoryId
+  if (Array.isArray(payload.categoryIds)) patch.categoryIds = normalizeCategoryIds(patch.categoryId ?? state.sites[idx].categoryId, payload.categoryIds)
   if (typeof payload.name === 'string') patch.name = payload.name.trim()
   if (typeof payload.url === 'string') patch.url = payload.url.trim()
   if (typeof payload.description === 'string') patch.description = payload.description
   if (typeof payload.icon === 'string') patch.icon = payload.icon
+  if (typeof payload.iconUrl === 'string') patch.iconUrl = payload.iconUrl
   if (Array.isArray(payload.tags)) patch.tags = payload.tags.filter((tag): tag is string => typeof tag === 'string')
   if (typeof payload.isVisible === 'boolean') patch.isVisible = payload.isVisible
   if (typeof payload.isPrivate === 'boolean') patch.isPrivate = payload.isPrivate
   if (typeof payload.cardVariant === 'string') patch.cardVariant = payload.cardVariant as NavSite['cardVariant']
-  state.sites = state.sites.map((site) => (site.id === id ? { ...site, ...patch, id } : site))
+  state.sites = state.sites.map((site) => {
+    if (site.id !== id) return site
+    const next = { ...site, ...patch, id }
+    return { ...next, categoryIds: normalizeCategoryIds(next.categoryId, next.categoryIds) }
+  })
   return Object.keys(patch)
 }
 
@@ -299,7 +327,10 @@ function deleteCategory(state: AppState, payload: Record<string, unknown>) {
   const before = state.categories.length
   state.categories = state.categories.filter((category) => category.id !== id)
   if (state.categories.length === before) throw new Error(`分类不存在：${id}`)
-  state.sites = state.sites.filter((site) => site.categoryId !== id)
+  state.sites = state.sites.flatMap((site) => {
+    const next = removeCategoryFromSite(site, id)
+    return next ? [next] : []
+  })
   return [id]
 }
 

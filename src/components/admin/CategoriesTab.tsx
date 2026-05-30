@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useNavStore } from '../../state/navStoreContext'
 import { ICON_OPTIONS } from '../../lib/icon-options'
+import { getSiteCategoryIds } from '../../lib/site-categories'
 import { IconByName } from '../../lib/icons'
 import type { NavCategory } from '../../types/navigation'
 import { Field, NumberInput, Select, TextArea, TextInput, Toggle } from './forms'
@@ -52,7 +53,11 @@ export function CategoriesTab() {
 
   const siteCounts = useMemo(() => {
     const counts = new Map<string, number>()
-    sites.forEach((site) => counts.set(site.categoryId, (counts.get(site.categoryId) ?? 0) + 1))
+    sites.forEach((site) => {
+      getSiteCategoryIds(site).forEach((categoryId) => {
+        counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1)
+      })
+    })
     return counts
   }, [sites])
 

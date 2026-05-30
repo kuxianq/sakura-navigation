@@ -45,10 +45,12 @@ export interface NavCategory {
 export interface NavSite {
   id: string
   categoryId: string
+  categoryIds?: string[]
   name: string
   url: string
   description: string
   icon: string
+  iconUrl?: string
   tags: string[]
   sortOrder: number
   isVisible: boolean

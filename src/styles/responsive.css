@@ -24,9 +24,29 @@
   .control-board,
   .slider-grid,
   .compact-board { grid-template-columns: 1fr; }
+  .site-grid { --site-card-min: 100%; --site-card-max: 100%; gap: 12px; }
+  .site-card { align-items: center; height: auto; min-height: 82px; padding: 13px 14px; }
+  .site-icon { width: 34px; height: 34px; }
+  .tag-row { max-height: 24px; overflow: hidden; }
+  .modal-overlay { align-items: end; padding: 10px; }
+  .modal { width: 100%; max-height: calc(100dvh - 20px); border-radius: 22px; }
+  .modal-header,
+  .modal-body,
+  .modal-footer { padding-left: 16px; padding-right: 16px; }
+  .modal-footer { flex-wrap: wrap; }
+  .modal-footer .btn { flex: 1; justify-content: center; }
+  .form-grid.two-col,
+  .site-form-grid { grid-template-columns: 1fr; }
+  .form-grid.two-col .span-2 { grid-column: auto; }
+  .category-check-grid { max-height: 128px; overflow-y: auto; padding-right: 2px; }
   .console-topbar,
   .console-module-head,
   .overview-hero { flex-direction: column; align-items: flex-start; }
   .admin-section-head { flex-direction: column; align-items: flex-start; }
   .admin-section-tools { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .site-card { transition: border-color .16s ease, background .16s ease, box-shadow .16s ease; }
+  .site-card:hover { transform: none; }
 }

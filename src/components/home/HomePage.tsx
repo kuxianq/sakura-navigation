@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { ExternalLink, Search, Sparkles } from 'lucide-react'
 import { useNavStore } from '../../state/navStoreContext'
+import { siteBelongsToCategory } from '../../lib/site-categories'
 import { IconByName } from '../../lib/icons'
 import type { NavSite } from '../../types/navigation'
+import { SiteIcon } from './SiteIcon'
 
 export function HomePage() {
   const { categories, sites, settings } = useNavStore()
@@ -25,7 +27,7 @@ export function HomePage() {
     const normalized = query.trim().toLowerCase()
     return sites
       .filter((site) => site.isVisible)
-      .filter((site) => effectiveCategory === 'all' || site.categoryId === effectiveCategory)
+      .filter((site) => effectiveCategory === 'all' || siteBelongsToCategory(site, effectiveCategory))
       .filter((site) => {
         if (!normalized) return true
         return [site.name, site.description, site.url, ...site.tags]
@@ -91,7 +93,7 @@ export function HomePage() {
               rel="noreferrer"
               target="_blank"
             >
-              <span className="site-icon"><IconByName name={site.icon} /></span>
+              <SiteIcon site={site} />
               <span className="site-body">
                 <strong>{site.name}</strong>
                 {settings.showCardDescription ? <small title={site.description}>{site.description}</small> : null}

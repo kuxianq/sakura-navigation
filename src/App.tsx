@@ -52,7 +52,7 @@ function AppShell() {
   const { settings } = useNavStore()
   const [route, setRoute] = useState<Route>(() => readRoute())
   const [apiBackground, setApiBackground] = useState<string | null>(null)
-  const [frontendUnlockToken, setFrontendUnlockToken] = useState(() => sessionStorage.getItem('nav_frontend_unlocked') ?? '')
+  const [frontendUnlockToken, setFrontendUnlockToken] = useState(() => localStorage.getItem('nav_frontend_unlocked') ?? '')
   const [adminUnlockToken, setAdminUnlockToken] = useState(() => sessionStorage.getItem('nav_admin_unlocked') ?? '')
   const [accessInput, setAccessInput] = useState('')
   const [adminInput, setAdminInput] = useState('')
@@ -110,7 +110,7 @@ function AppShell() {
   function unlockFrontend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (accessInput === settings.frontendPassword && settings.frontendPassword.trim()) {
-      sessionStorage.setItem('nav_frontend_unlocked', settings.frontendPassword)
+      localStorage.setItem('nav_frontend_unlocked', settings.frontendPassword)
       setFrontendUnlockToken(settings.frontendPassword)
       setAccessError(null)
       return
@@ -146,7 +146,7 @@ function AppShell() {
   }
 
   function logoutFrontend() {
-    sessionStorage.removeItem('nav_frontend_unlocked')
+    localStorage.removeItem('nav_frontend_unlocked')
     setFrontendUnlockToken('')
     setAccessInput('')
   }

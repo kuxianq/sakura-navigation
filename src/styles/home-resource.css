@@ -309,8 +309,7 @@
   .search-leading-icon { margin-left: 9px; }
   .resource-search-card input { min-width: 0; font-size: 14px; }
   .clear-search { padding: 8px 10px; font-size: 12px; }
-  .quick-tags { justify-content: flex-start; gap: 7px; margin-top: 10px; overflow-x: auto; flex-wrap: nowrap; width: 100%; padding-bottom: 2px; scrollbar-width: none; }
-  .quick-tags::-webkit-scrollbar { display: none; }
+  .quick-tags { justify-content: center; gap: 7px; margin-top: 10px; overflow: visible; flex-wrap: wrap; width: 100%; padding-bottom: 0; }
   .quick-tags button { flex: 0 0 auto; min-height: 40px; padding: 8px 12px; font-size: 12px; }
   .category-sections { width: 100%; gap: 20px; }
   .site-section { gap: 10px; }

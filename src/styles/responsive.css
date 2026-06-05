@@ -13,9 +13,25 @@
 }
 
 @media (max-width: 640px) {
-  .topbar { align-items: flex-start; flex-direction: column; border-radius: 24px; }
-  .top-actions { width: 100%; }
-  .top-actions button { flex: 1; justify-content: center; }
+  .app-shell { padding: 8px; }
+  .page-glass { min-height: calc(100svh - 16px); border-radius: 20px; padding: 10px; }
+  .topbar { align-items: stretch; flex-direction: column; gap: 8px; margin-bottom: 18px; border-radius: 20px; padding: 7px; }
+  .brand { justify-content: center; }
+  .brand-mark { width: 30px; height: 30px; }
+  .brand strong { font-size: 16px; }
+  .top-actions { width: 100%; gap: 5px; padding: 4px; }
+  .top-actions button { flex: 1; justify-content: center; min-height: 44px; padding: 9px 8px; font-size: 13px; }
+  .category-strip button { min-height: 44px; padding: 9px 12px; }
+  .btn { min-height: 44px; }
+  .field-input { min-height: 44px; }
+  .auth-gate { min-height: auto; padding: 8px 0 18px; place-items: start center; }
+  .auth-card { width: 100%; gap: 9px; padding: 18px 16px; border-radius: 22px; background: rgba(12, 7, 22, .54); }
+  .auth-icon { width: 42px; height: 42px; border-radius: 16px; }
+  .auth-card .eyebrow { margin-bottom: 4px; font-size: 11px; letter-spacing: .1em; }
+  .auth-card h1 { font-size: 24px; letter-spacing: -.03em; }
+  .auth-card p:not(.eyebrow) { font-size: 13px; line-height: 1.5; }
+  .auth-form { gap: 12px; margin-top: 4px; }
+  .auth-form .btn { min-height: 44px; justify-content: center; }
   .hero-copy h1 { font-size: 52px; }
   .site-grid,
   .console-nav,

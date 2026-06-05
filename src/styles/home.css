@@ -51,7 +51,7 @@
   text-shadow: 0 22px 58px color-mix(in srgb, var(--theme-primary) 38%, transparent);
 }
 .hero-copy p:not(.eyebrow) {
-  margin: 10px auto 0;
+  margin: 10px auto calc(env(safe-area-inset-bottom) + 0px);
   max-width: 620px;
   color: color-mix(in srgb, var(--theme-text) 82%, transparent);
   font-size: 15px;

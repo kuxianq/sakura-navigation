@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Bot, Copy, KeyRound, Power, ShieldCheck, Trash2 } from 'lucide-react'
+import { useNavStore } from '../../state/navStoreContext'
 import type { AiCommandResult, AiKeyRecord, AiScope } from '../../types/navigation'
 import { Field, TextInput, Toggle } from './forms'
 
@@ -19,12 +20,17 @@ function formatDate(value?: string) {
 }
 
 async function parseJson<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    throw new Error('API 不可用：当前预览没有挂载 Cloudflare Functions，已切换到本地预览模式。')
+  }
   const data = await response.json() as T
   if (!response.ok) throw new Error((data as { error?: string }).error || '请求失败')
   return data
 }
 
 export function AiKeyTab() {
+  const localStore = useNavStore()
   const [aiKeys, setAiKeys] = useState<AiKeyRecord[]>([])
   const [name, setName] = useState('主 AI 运维 Key')
   const [scopes, setScopes] = useState<AiScope[]>(defaultScopes)
@@ -39,13 +45,20 @@ export function AiKeyTab() {
   "cardOpacity": 0.16
 }`)
   const [testResult, setTestResult] = useState<AiCommandResult | null>(null)
+  const [apiAvailable, setApiAvailable] = useState(true)
+
+  function switchToLocalPreview(reason?: string) {
+    setApiAvailable(false)
+    setAiKeys(localStore.aiKeys)
+    setStatus(reason ?? '当前是本地预览模式：Key 会保存在浏览器 localStorage，不会写入线上 D1。')
+  }
 
   async function loadKeys() {
     try {
       const data = await parseJson<{ ok: boolean; items: AiKeyRecord[] }>(await fetch('/api/ai/keys'))
       setAiKeys(data.items)
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '读取 Key 失败。')
+      switchToLocalPreview(error instanceof Error ? error.message : '读取 Key 失败，已切换到本地预览模式。')
     }
   }
 
@@ -57,12 +70,17 @@ export function AiKeyTab() {
         if (!cancelled) setAiKeys(data.items)
       })
       .catch((error: unknown) => {
-        if (!cancelled) setStatus(error instanceof Error ? error.message : '读取 Key 失败。')
+        if (!cancelled) {
+          setApiAvailable(false)
+          setStatus(error instanceof Error ? error.message : '读取 Key 失败，已切换到本地预览模式。')
+        }
       })
     return () => {
       cancelled = true
     }
   }, [])
+
+  const displayedAiKeys = apiAvailable ? aiKeys : localStore.aiKeys
 
   function toggleScope(scope: AiScope, enabled: boolean) {
     setScopes((prev) => {
@@ -84,6 +102,13 @@ export function AiKeyTab() {
   async function generate() {
     setLoading(true)
     try {
+      if (!apiAvailable) {
+        const item = localStore.createAiKey({ name, scopes })
+        setCreatedSecret(item.secret ?? null)
+        setTestKey(item.secret ?? '')
+      setStatus('本地预览 Key 已生成，刷新后仍保存在 localStorage。')
+        return
+      }
       const data = await parseJson<{ ok: boolean; item: AiKeyRecord; secret: string }>(await fetch('/api/ai/keys', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -94,7 +119,7 @@ export function AiKeyTab() {
       setAiKeys((prev) => [data.item, ...prev])
       setStatus('新 Key 已生成，完整 Key 只显示一次。')
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '生成 Key 失败。')
+      switchToLocalPreview(error instanceof Error ? error.message : '生成 Key 失败，已切换到本地预览模式。')
     } finally {
       setLoading(false)
     }
@@ -103,6 +128,11 @@ export function AiKeyTab() {
   async function toggleAiKey(key: AiKeyRecord) {
     setLoading(true)
     try {
+      if (!apiAvailable) {
+        localStore.toggleAiKey(key.id)
+        setStatus(key.isActive ? '本地 Key 已禁用。' : '本地 Key 已启用。')
+        return
+      }
       await parseJson<{ ok: boolean }>(await fetch(`/api/ai/keys/${key.id}`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -111,7 +141,7 @@ export function AiKeyTab() {
       setAiKeys((prev) => prev.map((item) => (item.id === key.id ? { ...item, isActive: !key.isActive } : item)))
       setStatus(key.isActive ? 'Key 已禁用。' : 'Key 已启用。')
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '更新 Key 失败。')
+      switchToLocalPreview(error instanceof Error ? error.message : '更新 Key 失败，已切换到本地预览模式。')
     } finally {
       setLoading(false)
     }
@@ -121,11 +151,16 @@ export function AiKeyTab() {
     if (!window.confirm(`删除 Key：${key.name}？删除后无法恢复。`)) return
     setLoading(true)
     try {
+      if (!apiAvailable) {
+        localStore.deleteAiKey(key.id)
+        setStatus('本地 Key 已删除。')
+        return
+      }
       await parseJson<{ ok: boolean }>(await fetch(`/api/ai/keys/${key.id}`, { method: 'DELETE' }))
       setAiKeys((prev) => prev.filter((item) => item.id !== key.id))
       setStatus('Key 已删除。')
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : '删除 Key 失败。')
+      switchToLocalPreview(error instanceof Error ? error.message : '删除 Key 失败，已切换到本地预览模式。')
     } finally {
       setLoading(false)
     }
@@ -134,6 +169,12 @@ export function AiKeyTab() {
   async function runTestCommand() {
     try {
       const payload = testPayload.trim() ? JSON.parse(testPayload) as Record<string, unknown> : {}
+      if (!apiAvailable) {
+        const result = localStore.runAiCommand(testKey, testAction, JSON.stringify(payload))
+        setTestResult(result)
+        setStatus(result.ok ? '本地命令已执行，状态已写入 localStorage。' : '本地命令被拦截。')
+        return
+      }
       const data = await parseJson<{ ok: boolean; result: AiCommandResult['result']; changed?: string[]; error?: string }>(await fetch('/api/ai/command', {
         method: 'POST',
         headers: { authorization: `Bearer ${testKey}`, 'content-type': 'application/json' },
@@ -152,7 +193,7 @@ export function AiKeyTab() {
       <header className="console-module-head">
         <div>
           <p className="eyebrow"><Bot size={16} /> AI 运维 Key</p>
-          <h2>生产 Key 管理</h2>
+          <h2>{apiAvailable ? '生产 Key 管理' : '本地预览 Key 管理'}</h2>
         </div>
       </header>
 
@@ -190,11 +231,11 @@ export function AiKeyTab() {
 
         <section className="control-section ai-section">
           <div className="section-title"><ShieldCheck size={18} /><span>Key 列表</span></div>
-          {aiKeys.length === 0 ? (
+          {displayedAiKeys.length === 0 ? (
             <p className="muted">还没有 Key。生成后会显示名称、前缀、权限和状态。</p>
           ) : (
             <div className="key-list">
-              {aiKeys.map((key) => (
+              {displayedAiKeys.map((key) => (
                 <article className="key-card" key={key.id}>
                   <div>
                     <strong>{key.name}</strong>

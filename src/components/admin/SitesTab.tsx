@@ -20,6 +20,7 @@ function emptyDraft(categoryId: string): SiteDraftState {
     tags: [],
     sortOrder: 0,
     isVisible: true,
+    featured: false,
     cardVariant: 'inherit',
   }
 }
@@ -37,6 +38,7 @@ function fromSite(site: NavSite): SiteDraftState {
     tags: [...site.tags],
     sortOrder: site.sortOrder,
     isVisible: site.isVisible,
+    featured: site.featured ?? false,
     cardVariant: site.cardVariant ?? 'inherit',
   }
 }
@@ -145,6 +147,7 @@ export function SitesTab() {
         tags: [...draft.tags],
         sortOrder: draft.sortOrder,
         isVisible: draft.isVisible,
+        featured: draft.featured,
         cardVariant,
       })
     } else {
@@ -160,6 +163,7 @@ export function SitesTab() {
         tags: [...draft.tags],
         sortOrder: draft.sortOrder || undefined,
         isVisible: draft.isVisible,
+        featured: draft.featured,
         cardVariant,
       })
     }
@@ -259,6 +263,7 @@ export function SitesTab() {
                         <span className="row-icon"><IconByName name={site.icon} /></span>
                         <div>
                           <strong>{site.name}</strong>
+                          {site.featured ? <em className="row-badge">推荐</em> : null}
                           <small className="row-url">
                             <a href={site.url} target="_blank" rel="noreferrer">
                               {site.url} <ExternalLink size={12} />

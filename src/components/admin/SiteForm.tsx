@@ -14,6 +14,7 @@ export interface SiteDraftState {
   tags: string[]
   sortOrder: number
   isVisible: boolean
+  featured: boolean
   cardVariant: CardVariant | 'inherit'
 }
 
@@ -167,6 +168,12 @@ export function SiteForm({ draft, categories, errors, isEditing, onChange }: Sit
           onChange={(value) => onChange((prev) => ({ ...prev, isVisible: value }))}
           label="在首页显示"
           description="关闭后只在后台保留。"
+        />
+        <Toggle
+          checked={draft.featured}
+          onChange={(value) => onChange((prev) => ({ ...prev, featured: value }))}
+          label="推荐入口"
+          description="在首页卡片右上角显示轻量推荐角标。"
         />
       </div>
     </div>

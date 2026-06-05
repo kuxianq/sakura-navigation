@@ -1,3 +1,4 @@
+export type HomeLayout = 'grid' | 'grouped'
 export type CardVariant = 'glass' | 'float' | 'solid' | 'minimal'
 export type ThemePreset = 'sakura' | 'sky' | 'night' | 'aqua' | 'cream'
 export type BackgroundMode = 'gradient' | 'api' | 'custom'
@@ -55,6 +56,7 @@ export interface NavSite {
   sortOrder: number
   isVisible: boolean
   isPrivate?: boolean
+  featured?: boolean
   cardVariant?: CardVariant
 }
 
@@ -72,6 +74,12 @@ export interface ThemeSettings {
   fallbackBackground: string
   overlayOpacity: number
   blur: number
+  homeLayout: HomeLayout
+  showClock: boolean
+  showQuickTags: boolean
+  quickTagLimit: number
+  pinnedQuickTags: string[]
+  autoFaviconEnabled: boolean
   cardVariant: CardVariant
   animationLevel: AnimationLevel
 

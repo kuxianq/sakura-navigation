@@ -31,6 +31,12 @@ const appearanceSettingKeys = new Set<keyof ThemeSettings>([
   'backgroundBlur',
   'backgroundBrightness',
   'backgroundSaturation',
+  'homeLayout',
+  'showClock',
+  'showQuickTags',
+  'quickTagLimit',
+  'pinnedQuickTags',
+  'autoFaviconEnabled',
   'cardVariant',
   'cardRadius',
   'cardOpacity',
@@ -306,6 +312,7 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
       sortOrder: nextOrder,
       isVisible: draft.isVisible ?? true,
       isPrivate: draft.isPrivate ?? false,
+      featured: draft.featured ?? false,
       cardVariant: draft.cardVariant,
     }
     commitSites((prev) => (prev.some((s) => s.id === item.id) ? prev : [...prev, item]))
@@ -505,6 +512,7 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
         sortOrder: Math.max(0, ...sites.filter((site) => site.categoryId === categoryId).map((site) => site.sortOrder)) + 1,
         isVisible: typeof payload.isVisible === 'boolean' ? payload.isVisible : true,
         isPrivate: typeof payload.isPrivate === 'boolean' ? payload.isPrivate : false,
+        featured: typeof payload.featured === 'boolean' ? payload.featured : false,
         cardVariant: typeof payload.cardVariant === 'string' ? payload.cardVariant as NavSite['cardVariant'] : undefined,
       }
       return commitSuccess({ ok: true, result: 'success', message: `已创建站点：${item.name}`, changed: [item.id] }, categories, [...sites, item])
@@ -526,6 +534,7 @@ export function NavStoreProvider({ children }: { children: ReactNode }) {
       if (Array.isArray(payload.tags)) patch.tags = payload.tags.filter((tag): tag is string => typeof tag === 'string')
       if (typeof payload.isVisible === 'boolean') patch.isVisible = payload.isVisible
       if (typeof payload.isPrivate === 'boolean') patch.isPrivate = payload.isPrivate
+      if (typeof payload.featured === 'boolean') patch.featured = payload.featured
       if (typeof payload.cardVariant === 'string') patch.cardVariant = payload.cardVariant as NavSite['cardVariant']
       const nextSites = sites.map((site) => {
         if (site.id !== id) return site

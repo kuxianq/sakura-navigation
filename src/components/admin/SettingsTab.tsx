@@ -3,7 +3,7 @@ import { Image, Info, LayoutTemplate, Palette, Save, Sparkles } from 'lucide-rea
 import { useNavStore } from '../../state/navStoreContext'
 import type { ThemeSettings } from '../../types/navigation'
 import { getThemePreset, themePresets } from '../../data/themePresets'
-import { Field, RangeInput, Select, TextArea, TextInput, Toggle } from './forms'
+import { Field, NumberInput, RangeInput, Select, TextArea, TextInput, Toggle } from './forms'
 
 type SettingsPanel = 'basic' | 'theme' | 'background' | 'cards'
 
@@ -22,6 +22,11 @@ const cardVariants: { value: ThemeSettings['cardVariant']; label: string }[] = [
   { value: 'float', label: '通透悬浮' },
   { value: 'solid', label: '实体卡片' },
   { value: 'minimal', label: '极简入口' },
+]
+
+const homeLayoutOptions: { value: ThemeSettings['homeLayout']; label: string }[] = [
+  { value: 'grouped', label: '分类分组（资源门户）' },
+  { value: 'grid', label: '卡片平铺（经典首页）' },
 ]
 
 const animationLevels: { value: ThemeSettings['animationLevel']; label: string }[] = [
@@ -126,6 +131,20 @@ export function SettingsTab({ panel = 'basic' }: SettingsTabProps) {
               <Field label="页脚文字" hint="显示在首页底部，用于一句话签名。"><TextInput value={draft.footerText} onChange={(value) => patch('footerText', value)} placeholder="轻盈地收藏常用入口" /></Field>
               <Field label="网站 SVG 图标" hint="用于浏览器标签页和保存到桌面时的图标。支持 /assets/*.svg 或完整 URL。"><TextInput value={draft.siteIconSvg} onChange={(value) => patch('siteIconSvg', value)} placeholder="/assets/sakura-icon.svg" /></Field>
               <Field label="备用图标 URL" hint="可选；如果想用外部图标，可填完整 URL。"><TextInput value={draft.siteIconUrl ?? ''} onChange={(value) => patch('siteIconUrl', value)} placeholder="https://.../icon.svg" /></Field>
+            </div>
+            <Field label="首页布局" hint="分类分组会按分类展示站点，更接近资源门户；卡片平铺保留旧版紧凑体验。">
+              <Select value={draft.homeLayout} onChange={(value) => patch('homeLayout', value)} options={homeLayoutOptions} />
+            </Field>
+            <div className="form-grid two-col">
+              <Toggle checked={draft.showClock} onChange={(value) => patch('showClock', value)} label="显示大时钟" description="在首页标题上方显示当前时间和日期。" />
+              <Toggle checked={draft.showQuickTags} onChange={(value) => patch('showQuickTags', value)} label="显示快捷标签" description="从站点标签中提取热门标签，点击后快速筛选。" />
+              <Toggle checked={draft.autoFaviconEnabled} onChange={(value) => patch('autoFaviconEnabled', value)} label="自动获取站点图标" description="站点未设置图标 URL 时，按域名尝试加载 favicon。" />
+              <Field label="快捷标签数量" hint="建议 4 到 8 个，个人站不需要太多。">
+                <NumberInput value={draft.quickTagLimit} onChange={(value) => patch('quickTagLimit', Math.max(0, Math.min(12, Math.round(value))))} min={0} max={12} />
+              </Field>
+              <Field label="置顶快捷标签" hint="可选；用逗号分隔，例如：AI, 运维, 云盘。会优先显示，再由自动标签补齐。">
+                <TextInput value={draft.pinnedQuickTags.join(', ')} onChange={(value) => patch('pinnedQuickTags', value.split(/[，,]/).map((tag) => tag.trim()).filter(Boolean))} />
+              </Field>
             </div>
             <Field
               label="动画效果"

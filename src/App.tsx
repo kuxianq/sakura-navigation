@@ -136,9 +136,11 @@ function AppShell() {
       // Fall back to local preview password below when Pages Functions are unavailable.
     }
 
-    if (adminInput === settings.adminPassword && settings.adminPassword.trim()) {
-      sessionStorage.setItem('nav_admin_unlocked', settings.adminPassword)
-      setAdminUnlockToken(settings.adminPassword)
+    const previewAdminPassword = import.meta.env.DEV ? import.meta.env.VITE_PREVIEW_ADMIN_PASSWORD as string | undefined : undefined
+    const localAdminPassword = settings.adminPassword.trim() || previewAdminPassword?.trim() || ''
+    if (localAdminPassword && adminInput === localAdminPassword) {
+      sessionStorage.setItem('nav_admin_unlocked', localAdminPassword)
+      setAdminUnlockToken(localAdminPassword)
       setAdminError(null)
       return
     }
@@ -183,7 +185,7 @@ function AppShell() {
   } as React.CSSProperties
 
   return (
-    <main className={`app-shell theme-${settings.preset}`} style={shellStyle}>
+    <main className={`app-shell theme-${settings.preset} motion-${settings.animationLevel}`} style={shellStyle}>
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
       <div className="page-glass">

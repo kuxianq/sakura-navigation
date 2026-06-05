@@ -31,6 +31,7 @@ interface NavSite {
   sortOrder: number
   isVisible: boolean
   isPrivate?: boolean
+  featured?: boolean
   cardVariant?: 'glass' | 'float' | 'solid' | 'minimal'
 }
 
@@ -89,6 +90,12 @@ const appearanceSettingKeys = new Set([
   'cardDensity',
   'showCardDescription',
   'showCardTags',
+  'homeLayout',
+  'showClock',
+  'showQuickTags',
+  'quickTagLimit',
+  'pinnedQuickTags',
+  'autoFaviconEnabled',
 ])
 
 const forbiddenSettingKeys = new Set([
@@ -252,6 +259,7 @@ function createSite(state: AppState, payload: Record<string, unknown>) {
     sortOrder: Math.max(0, ...state.sites.filter((site) => site.categoryId === categoryId).map((site) => site.sortOrder)) + 1,
     isVisible: typeof payload.isVisible === 'boolean' ? payload.isVisible : true,
     isPrivate: typeof payload.isPrivate === 'boolean' ? payload.isPrivate : false,
+    featured: typeof payload.featured === 'boolean' ? payload.featured : false,
     cardVariant: typeof payload.cardVariant === 'string' ? payload.cardVariant as NavSite['cardVariant'] : undefined,
   }
   state.sites = [...state.sites, item]
@@ -274,6 +282,7 @@ function updateSite(state: AppState, payload: Record<string, unknown>) {
   if (Array.isArray(payload.tags)) patch.tags = payload.tags.filter((tag): tag is string => typeof tag === 'string')
   if (typeof payload.isVisible === 'boolean') patch.isVisible = payload.isVisible
   if (typeof payload.isPrivate === 'boolean') patch.isPrivate = payload.isPrivate
+  if (typeof payload.featured === 'boolean') patch.featured = payload.featured
   if (typeof payload.cardVariant === 'string') patch.cardVariant = payload.cardVariant as NavSite['cardVariant']
   state.sites = state.sites.map((site) => {
     if (site.id !== id) return site
